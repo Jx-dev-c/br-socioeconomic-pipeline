@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Dados brutos carregados do IBGE para o Postgres, sem nenhuma
+      transformação (ver `src/load/load_to_postgres.py`).
+    database: ibge_dw
+    schema: raw
+    tables:
+      - name: ibge_municipios
+        description: >
+          Snapshot atual dos municípios brasileiros com hierarquia
+          geográfica (UF, região). Full-refresh a cada carga — não tem
+          histórico, representa a divisão territorial vigente.
+        columns:
+          - name: municipio_id
+            tests: [unique, not_null]
+
+      - name: ibge_populacao
+        description: >
+          População residente estimada por município e ano (IBGE,
+          tabela SIDRA 6579). Carregada via delete-then-insert por ano,
+          então cada (municipio_id, ano) aparece no máximo uma vez.
+        columns:
+          - name: municipio_id
+            tests: [not_null]
+          - name: ano
+            tests: [not_null]

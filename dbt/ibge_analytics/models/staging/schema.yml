@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: stg_ibge_municipios
+    description: Municípios com hierarquia geográfica, sem transformação além de tipagem.
+
+  - name: stg_ibge_populacao
+    description: População estimada por município e ano, sem transformação além de tipagem.

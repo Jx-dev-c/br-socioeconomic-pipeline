@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: dim_municipio
+    description: Dimensão de município. Grão = 1 linha por município.
+    columns:
+      - name: municipio_id
+        tests: [unique, not_null]
+
+  - name: dim_tempo
+    description: Dimensão de tempo. Grão = 1 linha por ano presente nos dados de população.
+    columns:
+      - name: ano
+        tests: [unique, not_null]
+
+  - name: fct_populacao
+    description: >
+      Fato de população estimada. Grão = 1 linha por município + ano.
+      Nem todo município tem linha em todo ano: o IBGE às vezes não
+      publica estimativa pro ano vigente (ex: município recém-criado) —
+      por isso o teste de relacionamento é só a partir do fato pras
+      dimensões, nunca o contrário.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - municipio_id
+            - ano
+    columns:
+      - name: municipio_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_municipio')
+              field: municipio_id
+      - name: ano
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_tempo')
+              field: ano
+      - name: populacao_estimada
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
