@@ -30,5 +30,5 @@ airflow/airflow.db
 .idea/
 .DS_Store
 
-# Notas de contexto pra uso local (não faz parte do projeto em si)
-CLAUDE.md
+# Notas pessoais de andamento (não faz parte do projeto em si)
+notes/
