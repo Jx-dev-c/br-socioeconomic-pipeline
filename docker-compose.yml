@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ibge_postgres
+    environment:
+      POSTGRES_USER: ibge_user
+      POSTGRES_PASSWORD: ibge_pass
+      POSTGRES_DB: ibge_dw
+    ports:
+      - "5433:5432"
+    volumes:
+      - ibge_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ibge_user -d ibge_dw"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  airflow:
+    image: apache/airflow:2.9.3
+    container_name: ibge_airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      # dentro da rede do compose o Postgres é acessado pelo nome do
+      # serviço (`postgres`), não `localhost` — e pela porta interna
+      # 5432, não a 5433 exposta pro host
+      DATABASE_URL: postgresql://ibge_user:ibge_pass@postgres:5432/ibge_dw
+      # dbt NÃO entra aqui de propósito: instalar dbt-core no mesmo
+      # ambiente do Airflow reintroduz conflito de dependências. Os
+      # tasks `dbt_run`/`dbt_test` da DAG assumem uma imagem separada
+      # com dbt instalado (ex: um KubernetesPodOperator ou uma imagem
+      # custom) — fora do escopo deste demo local, que já validou
+      # `dbt run`/`dbt test` direto via CLI (ver README).
+      # sem sqlalchemy aqui de propósito: o Airflow 2.9.3 já embute uma
+      # versão própria (<2.0) e pin explícito quebra o ORM interno dele
+      # (sqlalchemy 2.0.31 quebrou o `airflow standalone` com
+      # ArgumentError no model TaskInstance na hora de testar) —
+      # melhor deixar o Airflow usar a versão dele mesmo.
+      _PIP_ADDITIONAL_REQUIREMENTS: "pandas requests tenacity psycopg2-binary python-dotenv"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ibge_airflow_data:/opt/airflow
+    ports:
+      - "8080:8080"
+    command: standalone
+
+  metabase:
+    image: metabase/metabase:v0.50.8
+    container_name: ibge_metabase
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    volumes:
+      - ibge_metabase_data:/metabase-data
+    environment:
+      MB_DB_FILE: /metabase-data/metabase.db
+
+volumes:
+  ibge_postgres_data:
+  ibge_airflow_data:
+  ibge_metabase_data:
