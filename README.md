@@ -163,4 +163,14 @@ e Airflow em `http://localhost:8080`.
 
 ## Roadmap
 
-Ver lista de próximos passos em `CLAUDE.md`.
+Já rodou de ponta a ponta: Postgres, extração + load, dbt (5 models,
+15 testes), Airflow (extract/load orquestrados de verdade) e Metabase
+com os primeiros gráficos. Próximos passos:
+
+- [ ] Adicionar um segundo indicador do IBGE via a mesma API de
+      agregados (ex: PIB municipal) — o padrão de
+      `fetch_*_raw`/`parse_*` já é reutilizável
+- [ ] CI simples (GitHub Actions) rodando `pytest` a cada push
+- [ ] Imagem Docker custom com dbt pré-instalado, pra rodar
+      `dbt_run`/`dbt_test` também dentro do Airflow (hoje só funcionam
+      via CLI direto — ver comentário no `docker-compose.yml`)
