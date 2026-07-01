@@ -66,22 +66,27 @@ br-socioeconomic-pipeline/
 # 1. entrar no projeto
 cd br-socioeconomic-pipeline
 
-# 2. ambiente virtual + dependências
+# 2. subir a infra: Postgres, Airflow e Metabase
+docker compose up -d
+# Postgres: localhost:5433 | Airflow: localhost:8080 | Metabase: localhost:3000
+
+# 3. ambiente virtual + dependências (use Python 3.11/3.12 — dbt ainda
+# não suporta 3.13+)
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# 3. configurar variáveis de ambiente
+# 4. configurar variáveis de ambiente
 cp .env.example .env
-# IBGE não precisa de chave — só configure DATABASE_URL se for carregar no Postgres
+# IBGE não precisa de chave — DATABASE_URL já aponta pro Postgres do compose
 
-# 4. rodar a extração (salva em ./data/raw/, não precisa de AWS nem Postgres)
+# 5. rodar a extração (salva em ./data/raw/, não precisa do Postgres rodando)
 python -m src.extract.ibge_populacao --anos 2024,2025
 
-# 5. carregar no Postgres (precisa de DATABASE_URL configurada)
+# 6. carregar no Postgres
 python -m src.load.load_to_postgres --anos 2024,2025
 
-# 6. rodar dbt
+# 7. rodar dbt
 cd dbt/ibge_analytics
 dbt deps         # instala dbt_utils
 dbt debug        # confirma conexão com o banco
@@ -89,9 +94,11 @@ dbt run
 dbt test
 ```
 
-Postgres, Airflow e Metabase sobem juntos via `docker-compose up -d`
-(ver `docs/architecture.md`). Metabase fica em `http://localhost:3000`
-e Airflow em `http://localhost:8080`.
+A partir daí: dispare a DAG `ibge_populacao_pipeline` em
+`localhost:8080` (usuário `admin`, senha gerada na primeira subida —
+ver `docker logs ibge_airflow` ou o arquivo
+`standalone_admin_password.txt` dentro do container), e monte os
+gráficos em `localhost:3000` conectando no banco `ibge_dw`.
 
 ## Decisões e trade-offs
 
