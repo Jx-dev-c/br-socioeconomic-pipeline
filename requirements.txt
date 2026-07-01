@@ -1,0 +1,22 @@
+# Extração e utilitários
+requests==2.32.3
+pandas==2.2.2
+boto3==1.34.144
+python-dotenv==1.0.1
+sqlalchemy==2.0.31
+psycopg2-binary==2.9.9
+tenacity==8.5.0
+
+# Testes
+pytest==8.2.2
+pytest-mock==3.14.0
+
+# dbt (opcional: pode ir em requirements-dbt.txt separado se preferir
+# isolar do ambiente de extração)
+dbt-core==1.8.3
+dbt-postgres==1.8.2
+
+# Airflow NÃO está aqui de propósito — instale via Docker
+# (docker-compose oficial da Apache ou Astro CLI). Airflow tem pins de
+# dependência muito específicos e costuma quebrar se instalado no mesmo
+# venv de outras libs.

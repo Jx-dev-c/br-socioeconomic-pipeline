@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Env / credenciais
+.env
+*.pem
+
+# Dados
+data/
+*.csv
+*.zip
+!dbt/ibge_analytics/**/*.yml
+
+# dbt
+dbt/ibge_analytics/target/
+dbt/ibge_analytics/dbt_packages/
+dbt/ibge_analytics/logs/
+
+# Airflow
+airflow/logs/
+airflow/airflow.db
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Notas de contexto pra uso local (não faz parte do projeto em si)
+CLAUDE.md
